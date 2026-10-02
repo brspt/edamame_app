@@ -1,30 +1,36 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:edamame_app/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  testWidgets('Sector dialog applies changes without mutating its input',
+      (tester) async {
+    final selected = ['20'];
+    List<String>? result;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (context) {
+        return TextButton(
+          onPressed: () async {
+            result = await showDialog<List<String>>(
+              context: context,
+              builder: (_) => MultiSelectDialog(
+                items: ['19', '20', '21'],
+                initialSelectedItems: selected,
+              ),
+            );
+          },
+          child: const Text('Open sectors'),
+        );
+      }),
+    ));
+    await tester.tap(find.text('Open sectors'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sektor 19'));
+    await tester.tap(find.text('Sektor 20'));
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(selected, ['20']);
+    await tester.tap(find.text('Terapkan'));
+    await tester.pumpAndSettle();
+    expect(result, ['19']);
   });
 }
